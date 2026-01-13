@@ -1,6 +1,7 @@
 import random
 from typing import Dict, Any
 
+# checked by suliman
 state : Dict[str, Any] = {
     'board': [0] * 30,
 
@@ -8,6 +9,7 @@ state : Dict[str, Any] = {
 
     'player2_pieces': set(),
 
+    # 1 is black, 0 is white
     'player_ids': [0, 1],
 
     'current_player': 0,
@@ -23,6 +25,7 @@ state : Dict[str, Any] = {
     'winner': None
 }
 
+# checked by suliman
 def init_game(state: Dict[str, Any]):
 
     state['board'] = [0] * 30
@@ -44,7 +47,10 @@ def init_game(state: Dict[str, Any]):
     state['black_box'] = 0
     state['game_over'] = False
     state['winner'] = None
-###################################
+
+
+
+# checked by suliman
 def roll_dice() :
     stick1 = random.randint(0,1)
     stick2 = random.randint(0,1)
@@ -57,12 +63,12 @@ def roll_dice() :
         return 5
 
     return total
-###################################
+
+# checked by suliman
 def is_valid_move(state, old_position, new_position, dice_value) :
 
     current_player = state['current_player']
-    current_pieces = state['player1_pieces'] if current_player == 0 else state['player2_pieces']
-
+    current_pieces = state['player1_pieces'] if current_player == 1 else state['player2_pieces']
     if old_position not in current_pieces:
         return False
     if old_position < 25 and new_position > 25:
@@ -75,41 +81,52 @@ def is_valid_move(state, old_position, new_position, dice_value) :
         return False
     
     return True
-###################################
+
+# checked by suliman
 def get_valid_moves(state, dice_value):
     current_player = state['current_player']
-    current_pieces = state['player1_pieces'] if current_player == 0 else state['player2_pieces']
-    valid_moves = {}
-
+    current_pieces = state['player1_pieces'] if current_player == 1 else state['player2_pieces']
+    valid_moves = []
     for current_position in current_pieces:
         new_position = current_position + dice_value
-
         if is_valid_move(state, current_position, new_position, dice_value):
-            valid_moves[current_position] = new_position
+            valid_moves.append((current_position, new_position))
 
     return valid_moves
-###################################
+
+# checked by suliman
 def switch_turn(state):
     state['current_player'] = 1 - state['current_player']
-###################################
+
+# checked by suliman
 def game_over(state):
     if state['black_box'] == 7:
         state['winner'] = 0
         state['game_over'] = True
+        print("=" * 50)
+        print("GAME OVER!")
+        print("Winner: Black (Player 1)")
+        print("=" * 50)
         return True
 
     elif state['white_box'] == 7:
         state['winner'] = 1
         state['game_over'] = True
+        print("=" * 50)
+        print("GAME OVER!")
+        print("Winner: White (Player 0)")
+        print("=" * 50)
         return True
 
     state['game_over'] = False
     state['winner'] = None
     return False
-###################################
+
+# checked by suliman
 def swap_pieces(state, from_pos, to_pos):
     current_player = state['current_player']
-    if current_player == 0:
+    # Match the logic from get_valid_moves and apply_move
+    if current_player == 1:
         current_pieces = state['player1_pieces']
         opponent_pieces = state['player2_pieces']
         current_player_val = 1
@@ -120,15 +137,19 @@ def swap_pieces(state, from_pos, to_pos):
         current_player_val = 2
         opponent_player_val = 1
 
-    current_pieces.remove(from_pos)
-    opponent_pieces.remove(to_pos)
+    # Remove pieces only if they exist
+    if from_pos in current_pieces:
+        current_pieces.remove(from_pos)
+    if to_pos in opponent_pieces:
+        opponent_pieces.remove(to_pos)
 
     current_pieces.add(to_pos)
     opponent_pieces.add(from_pos)
 
     state['board'][from_pos] = opponent_player_val
     state['board'][to_pos] = current_player_val
-###################################
+
+# checked by suliman
 # return the first available position befor rebirth
 def force_rebirth(state):
     rebirth = 14
@@ -142,10 +163,80 @@ def force_rebirth(state):
     
     return None
 
+def check_and_return_to_rebirth(state, dice_value, valid_moves):
+    """
+    Check if any piece needs to be returned to rebirth and return it.
+    Same logic as in apply_move but as a separate function.
+    
+    Returns True if a piece was returned to rebirth, False otherwise.
+    """
+    current_player = state['current_player']
+    # Match the logic from get_valid_moves: player 1 uses player1_pieces, player 0 uses player2_pieces
+    if current_player == 1:
+        current_pieces = state['player1_pieces']
+        current_player_val = 1
+    else:
+        current_pieces = state['player2_pieces']
+        current_player_val = 2
+    
+    special_positions = [27, 28, 29]
+    
+    # Check if there's a piece in special positions that needs to return to rebirth
+    # Case 1: Piece in special position (27, 28, 29) that cannot move with current dice roll
+    for pos in special_positions:
+        if pos in current_pieces:
+            # Check if this piece has a valid move
+            has_valid_move = False
+            for from_pos, to_pos in valid_moves:
+                if from_pos == pos:
+                    has_valid_move = True
+                    break
+            
+            # If no valid move, return to rebirth
+            if not has_valid_move:
+                rebirth_pos = force_rebirth(state)
+                if rebirth_pos is not None:
+                    if pos in current_pieces:
+                        current_pieces.remove(pos)
+                    state['board'][pos] = 0
+                    current_pieces.add(rebirth_pos)
+                    state['board'][rebirth_pos] = current_player_val
+                    return True
+    
+    # Case 2: Check if there's a piece in special positions that wasn't moved
+    # This happens when we move a different piece, the special piece should return to rebirth
+    special_piece = None
+    for pos in current_pieces:
+        if pos in special_positions:
+            # Check if this piece was moved (has a valid move)
+            was_moved = False
+            for from_pos, to_pos in valid_moves:
+                if from_pos == pos:
+                    was_moved = True
+                    break
+            
+            if not was_moved:
+                special_piece = pos
+                break
+    
+    if special_piece is not None:
+        rebirth_pos = force_rebirth(state)
+        if rebirth_pos is not None:
+            if special_piece in current_pieces:
+                current_pieces.remove(special_piece)
+            state['board'][special_piece] = 0
+            current_pieces.add(rebirth_pos)
+            state['board'][rebirth_pos] = current_player_val
+            return True
+    
+    return False
+
 ###################################
 def apply_move(state,current_position,new_position,valid_moves):
+    # get the current player and the pieces of the current player and the opponent
     current_player = state['current_player']
-    if current_player == 0:
+    # Match the logic from get_valid_moves: player 1 uses player1_pieces, player 0 uses player2_pieces
+    if current_player == 1:
         current_pieces = state['player1_pieces']
         opponent_pieces = state['player2_pieces']
         current_player_val = 1
@@ -156,14 +247,19 @@ def apply_move(state,current_position,new_position,valid_moves):
         current_player_val = 2
         opponent_player_val = 1
 
+
     special_positions = [27, 28, 29]
-    #if we try to move a piece from a special position using a dice roll that is not 2 or 3, the piece is forced to return to the House of Rebirth
-    if current_position not in valid_moves :
+    # if we try to move a piece from a special position using a dice roll that is not 2 or 3,
+    # the piece is forced to return to the House of Rebirth
+    # Check if (current_position, new_position) is in valid_moves list
+    move_tuple = (current_position, new_position)
+    if move_tuple not in valid_moves:
         if current_position in current_pieces:
             if current_position in special_positions and (new_position ==current_position+ state['dice_value'] or new_position ==30):
                 rebirth_pos = force_rebirth(state)
                 if rebirth_pos is not None:
-                    current_pieces.remove(current_position)
+                    if current_position in current_pieces:
+                        current_pieces.remove(current_position)
                     state['board'][current_position] = 0
                     current_pieces.add(rebirth_pos)
                     state['board'][rebirth_pos] = current_player_val
@@ -186,15 +282,17 @@ def apply_move(state,current_position,new_position,valid_moves):
             if special_piece is not None:
                 rebirth_pos = force_rebirth(state)
                 if rebirth_pos is not None:
-                    current_pieces.remove(special_piece)
+                    if special_piece in current_pieces:
+                        current_pieces.remove(special_piece)
                     state['board'][special_piece] = 0
                     current_pieces.add(rebirth_pos)
                     state['board'][rebirth_pos] = current_player_val
         #move the piece that has exited the board into its box
-        if new_position == 30:
-            current_pieces.remove(current_position)
+        if new_position >= 30:
+            if current_position in current_pieces:
+                current_pieces.remove(current_position)
             state['board'][current_position] = 0
-            if current_player == 0:
+            if current_player == 1:
                 state['black_box'] += 1
             else:
                 state['white_box'] += 1   
@@ -203,7 +301,8 @@ def apply_move(state,current_position,new_position,valid_moves):
         if new_position == 26:
             rebirth_pos = force_rebirth(state)
             if rebirth_pos is not None:
-                current_pieces.remove(current_position)
+                if current_position in current_pieces:
+                    current_pieces.remove(current_position)
                 state['board'][current_position] = 0
                 current_pieces.add(rebirth_pos)
                 state['board'][rebirth_pos] = current_player_val
@@ -212,7 +311,8 @@ def apply_move(state,current_position,new_position,valid_moves):
         to_pos =state['board'][new_position]
         #normal move to an empty position
         if to_pos == 0:
-            current_pieces.remove(current_position)
+            if current_position in current_pieces:
+                current_pieces.remove(current_position)
             current_pieces.add(new_position)
             state['board'][current_position] = 0
             state['board'][new_position] = current_player_val
@@ -222,10 +322,12 @@ def apply_move(state,current_position,new_position,valid_moves):
             swap_pieces(state, current_position, new_position)
             return
     return               
-###################################
+
+# checked by suliman
 def new_game(state):
     return init_game(state)
-###################################
+
+# checked by suliman
 def handle_turn(state):
     dice = roll_dice()
     state['dice_value'] = dice
@@ -239,6 +341,24 @@ def handle_turn(state):
 
     # هون بعد ما نطبق الحركة منستدعي التابع يلي بيغير الدور للاعب التاني
     switch_turn(state)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # def handle_turn(state, old_position=None, new_position=None):
 #     dice = roll_dice()
