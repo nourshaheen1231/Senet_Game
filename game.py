@@ -233,7 +233,7 @@ def check_and_return_to_rebirth(state, dice_value, valid_moves):
 
 ##################################             
 def handle_special_piece_return(state, current_pieces, current_player_val):
-    """Return any unmoved special-position piece to rebirth."""
+    #Return any unmoved special-position piece to rebirth
     special_positions = [27, 28, 29]
 
     # Find any special piece that still exists

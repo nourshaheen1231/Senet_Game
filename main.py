@@ -46,7 +46,6 @@ def main():
         # If valid_moves is empty, check if any piece needs to return to rebirth
         if dice_rolled and len(valid_moves) == 0:
             check_and_return_to_rebirth(state, current_dice_value, valid_moves)
-            # After returning to rebirth, get valid moves again
             valid_moves = get_valid_moves(state, current_dice_value)
         
         exit_piece_pos = None
@@ -68,7 +67,6 @@ def main():
                     
                     # Check if clicked on roll dice button
                     if roll_button_rect.collidepoint(mouse_x, mouse_y):
-                        # Disable if game is over
                         if state['game_over']:
                             continue
                         if not dice_rolled:
@@ -81,7 +79,6 @@ def main():
                             current_pieces = state['player1_pieces'] if state['current_player'] == 1 else state['player2_pieces']
                             valid_moves = get_valid_moves(state, current_dice_value)
 
-                            # Nour Edit: restore terminal debug print
                             print("========================================")
                             print(f"Current player: {state['current_player']} ({'Black' if state['current_player'] == 1 else 'White'})")
                             print(f"Player pieces: {sorted(current_pieces)}")
@@ -99,18 +96,14 @@ def main():
                         current_dice_value = 0
                         continue
                     
-                    # Check if clicked on exit button
+                    # ---------------------------------------------------------
+                    # EXIT BUTTON — Nour Fix:
+                    # Always allow exit attempt even if invalid.
+                    # Use selected_piece instead of exit_piece_pos.
+                    # ---------------------------------------------------------
                     if exit_button_rect.collidepoint(mouse_x, mouse_y):
-                        if exit_piece_pos is not None:
-                            # Exit the piece from the board - find the actual target position from valid_moves
-                            target_pos = 30
-                            for from_pos, to_pos in valid_moves:
-                                if from_pos == exit_piece_pos and to_pos >= 30:
-                                    target_pos = to_pos
-                                    break
-                            
-                            # Nour Edit: apply_move returns True only if real change happened
-                            move_happened = apply_move(state, exit_piece_pos, target_pos, valid_moves)
+                        if dice_rolled and selected_piece is not None:
+                            move_happened = apply_move(state, selected_piece, 30, valid_moves)
 
                             if move_happened:
                                 game_over(state)
@@ -124,10 +117,8 @@ def main():
                     
                     # Check if clicked on skip turn button
                     if skip_button_rect.collidepoint(mouse_x, mouse_y):
-                        # Disable if game is over
                         if state['game_over']:
                             continue
-                        # Only allow skip if valid_moves is empty after checking for rebirth
                         if dice_rolled and len(valid_moves) == 0:
                             piece_returned = check_and_return_to_rebirth(state, current_dice_value, valid_moves)
                             if not piece_returned:
@@ -144,58 +135,44 @@ def main():
                     if square is None:
                         continue
                     
-                    # Disable board interactions if game is over
                     if state['game_over']:
                         continue
                     
                     if not dice_rolled:
                         continue
                     
-                    # Get current player's pieces and opponent's pieces
                     current_pieces = state['player1_pieces'] if state['current_player'] == 1 else state['player2_pieces']
                     opponent_pieces = state['player2_pieces'] if state['current_player'] == 1 else state['player1_pieces']
                     
-                    # Check what was clicked
                     is_empty = state['board'][square] == 0
                     is_current_player_piece = square in current_pieces
                     is_opponent_piece = square in opponent_pieces
                     
-                    # If no piece selected
                     if selected_piece is None:
-                        # Only select if it's current player's piece
                         if is_current_player_piece:
                             selected_piece = square
                         elif is_empty or is_opponent_piece:
-                            pass  # Do nothing
+                            pass
                     
                     else:
-                        # A piece is already selected
                         valid_moves = get_valid_moves(state, current_dice_value)
                         move_tuple = (selected_piece, square)
                         special_positions = [27, 28, 29]
 
-                        # ---------------------------------------------------------
-                        # Nour Edit: allow sending move to 30 even if invalid
-                        # This enables apply_move to handle special-position logic
-                        # ---------------------------------------------------------
+                        # Allow special positions to send invalid moves
                         if move_tuple in valid_moves:
                             move_happened = apply_move(state, selected_piece, square, valid_moves)
 
                         elif selected_piece in special_positions and square == 30:
-                            # Nour Edit: force sending (selected_piece → 30)
                             move_happened = apply_move(state, selected_piece, 30, valid_moves)
 
                         elif selected_piece in special_positions:
-                            # Nour Edit: allow invalid moves for special positions
                             move_happened = apply_move(state, selected_piece, square, valid_moves)
 
                         else:
                             selected_piece = None
                             continue
 
-                        # ---------------------------------------------------------
-                        # Nour Edit: turn changes ONLY if a real board change happened
-                        # ---------------------------------------------------------
                         if move_happened:
                             game_over(state)
                             if not state['game_over']:
@@ -206,22 +183,11 @@ def main():
                         selected_piece = None
         
         # Render
-        # Fill background with white
         screen.fill(WHITE)
-        
-        # Draw board (with gray background)
         draw_board(selected_piece, dice_rolled, current_dice_value)
-        
-        # Draw exit button (on the right side of the board)
         draw_exit_button(dice_rolled, current_dice_value, valid_moves)
-        
-        # Draw skip turn button (below exit button)
         draw_skip_turn_button(valid_moves, dice_rolled)
-        
-        # Draw info panel
         draw_info_panel(dice_rolled, current_dice_value)
-        
-        # Update display
         pygame.display.flip()
         clock.tick(60)
     
