@@ -231,8 +231,29 @@ def check_and_return_to_rebirth(state, dice_value, valid_moves):
     
     return False
 
-###################################
-def apply_move(state,current_position,new_position,valid_moves):
+##################################             
+def handle_special_piece_return(state, current_pieces, current_player_val):
+    """Return any unmoved special-position piece to rebirth."""
+    special_positions = [27, 28, 29]
+
+    # Find any special piece that still exists
+    special_piece = None
+    for pos in current_pieces:
+        if pos in special_positions:
+            special_piece = pos
+            break
+
+    if special_piece is not None:
+        rebirth_pos = force_rebirth(state)
+        if rebirth_pos is not None:
+            if special_piece in current_pieces:
+                current_pieces.remove(special_piece)
+            state['board'][special_piece] = 0
+            current_pieces.add(rebirth_pos)
+            state['board'][rebirth_pos] = current_player_val
+
+########################################
+def apply_move(state, current_position, new_position, valid_moves):
     # get the current player and the pieces of the current player and the opponent
     current_player = state['current_player']
     # Match the logic from get_valid_moves: player 1 uses player1_pieces, player 0 uses player2_pieces
@@ -247,15 +268,14 @@ def apply_move(state,current_position,new_position,valid_moves):
         current_player_val = 2
         opponent_player_val = 1
 
-
     special_positions = [27, 28, 29]
-    # if we try to move a piece from a special position using a dice roll that is not 2 or 3,
-    # the piece is forced to return to the House of Rebirth
-    # Check if (current_position, new_position) is in valid_moves list
+
     move_tuple = (current_position, new_position)
+     # if we try to move a piece from a special position using a dice roll that is not 2 or 3,
+     # the piece is forced to return to the House of Rebirth
     if move_tuple not in valid_moves:
         if current_position in current_pieces:
-            if current_position in special_positions and (new_position ==current_position+ state['dice_value'] or new_position ==30):
+            if current_position in special_positions and (new_position == current_position + state['dice_value'] or new_position == 30):
                 rebirth_pos = force_rebirth(state)
                 if rebirth_pos is not None:
                     if current_position in current_pieces:
@@ -263,65 +283,62 @@ def apply_move(state,current_position,new_position,valid_moves):
                     state['board'][current_position] = 0
                     current_pieces.add(rebirth_pos)
                     state['board'][rebirth_pos] = current_player_val
-                    return
-    else:
-        #moving backward is not allowed    
-        if new_position < current_position:
-            return
-        #at the House of Horus any roll will move the piece off the board
-        if current_position ==29 :
-            new_position =30
-        #if in the previous turn a piece was on a special position and was not moved it will be transferred to the House of Rebirth in the current turn
-        if current_position not in special_positions:
-            special_piece = None
-            for pos in current_pieces:
-                if pos in special_positions:
-                    special_piece = pos
-                    break
+                    return True  
+        return False 
 
-            if special_piece is not None:
-                rebirth_pos = force_rebirth(state)
-                if rebirth_pos is not None:
-                    if special_piece in current_pieces:
-                        current_pieces.remove(special_piece)
-                    state['board'][special_piece] = 0
-                    current_pieces.add(rebirth_pos)
-                    state['board'][rebirth_pos] = current_player_val
-        #move the piece that has exited the board into its box
-        if new_position >= 30:
+    # moving backward is not allowed    
+    if new_position < current_position:
+        return False
+
+    # at the House of Horus any roll will move the piece off the board
+    if current_position == 29:
+        new_position = 30    
+
+    # move the piece that has exited the board into its box
+    if new_position >= 30:
+        if current_position in current_pieces:
+            current_pieces.remove(current_position)
+        state['board'][current_position] = 0
+        if current_player == 1:
+            state['black_box'] += 1
+        else:
+            state['white_box'] += 1
+        return True
+
+    # if the piece is in the House of water it will be moved to the House of Rebirth
+    if new_position == 26:
+        rebirth_pos = force_rebirth(state)
+        if rebirth_pos is not None:
             if current_position in current_pieces:
                 current_pieces.remove(current_position)
             state['board'][current_position] = 0
-            if current_player == 1:
-                state['black_box'] += 1
-            else:
-                state['white_box'] += 1   
-            return
-        #if the piece is in the House of water it will be moved to the House of Rebirth
-        if new_position == 26:
-            rebirth_pos = force_rebirth(state)
-            if rebirth_pos is not None:
-                if current_position in current_pieces:
-                    current_pieces.remove(current_position)
-                state['board'][current_position] = 0
-                current_pieces.add(rebirth_pos)
-                state['board'][rebirth_pos] = current_player_val
-            return
+            current_pieces.add(rebirth_pos)
+            state['board'][rebirth_pos] = current_player_val
+        return True
 
-        to_pos =state['board'][new_position]
-        #normal move to an empty position
-        if to_pos == 0:
-            if current_position in current_pieces:
-                current_pieces.remove(current_position)
-            current_pieces.add(new_position)
-            state['board'][current_position] = 0
-            state['board'][new_position] = current_player_val
-            return
-        #swap pieces if the position is occupied by an opponent's piece
-        elif to_pos == opponent_player_val:
-            swap_pieces(state, current_position, new_position)
-            return
-    return               
+    to_pos = state['board'][new_position]
+
+    # normal move to an empty position
+    if to_pos == 0:
+        if current_position in current_pieces:
+            current_pieces.remove(current_position)
+        current_pieces.add(new_position)
+        state['board'][current_position] = 0
+        state['board'][new_position] = current_player_val
+        #check if any special piece needs to return to rebirth
+        if current_position not in special_positions and new_position not in special_positions:
+            handle_special_piece_return(state, current_pieces, current_player_val)
+        return True
+
+    # swap pieces if the position is occupied by an opponent's piece
+    elif to_pos == opponent_player_val:
+        swap_pieces(state, current_position, new_position)
+        #check if any special piece needs to return to rebirth
+        if current_position not in special_positions and new_position not in special_positions:
+            handle_special_piece_return(state, current_pieces, current_player_val)
+        return True
+
+    return False
 
 # checked by suliman
 def new_game(state):
