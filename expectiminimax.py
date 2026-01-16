@@ -30,7 +30,9 @@ def heuristic(state, new_state):
         if piece == 23:
             score += 2*(6/16)
         elif piece == 24 or piece == 22:
-            score +=  4/16 
+            score +=  4/16
+        elif piece == 26:
+            score -= 20
         elif piece == 27:
             score -=2*(4/16)
         elif piece == 28:
@@ -44,25 +46,3 @@ def heuristic(state, new_state):
         score -= 6
 
     return score
-
-######################################
-# def  expectiminimax(state ,depth =4):
-#     if state['game_over'] or depth ==0:
-#         return heuristic(state , state)
-
-#      if the adversary is to play at node
-#         value= float('inf') 
-#         for v in get_valid_moves(state, current_dice_value):
-#             value = min(value, expectiminimax(child, depth-1))
-#     else if we are to play at node
-#         value= float('-inf')
-#         foreach child of state
-#             value = max(value, expectiminimax(child, depth-1))
-#     else if random event at state
-#         value = 0
-#         foreach child of state
-#             value = value + (Probability[child] * expectiminimax(child, depth-1))
-#     return value
-
-
-
