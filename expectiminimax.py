@@ -1,3 +1,7 @@
+import copy
+from game import get_valid_moves, switch_turn, apply_move
+
+
 def heuristic(state, new_state):
     current_player = state['current_player']
     if current_player ==0:
@@ -30,7 +34,9 @@ def heuristic(state, new_state):
         if piece == 23:
             score += 2*(6/16)
         elif piece == 24 or piece == 22:
-            score +=  4/16 
+            score +=  4/16
+        elif piece == 26:
+            score -= 20
         elif piece == 27:
             score -=2*(4/16)
         elif piece == 28:
@@ -46,23 +52,81 @@ def heuristic(state, new_state):
     return score
 
 ######################################
-# def  expectiminimax(state ,depth =4):
-#     if state['game_over'] or depth ==0:
-#         return heuristic(state , state)
 
-#      if the adversary is to play at node
-#         value= float('inf') 
-#         for v in get_valid_moves(state, current_dice_value):
-#             value = min(value, expectiminimax(child, depth-1))
-#     else if we are to play at node
-#         value= float('-inf')
-#         foreach child of state
-#             value = max(value, expectiminimax(child, depth-1))
-#     else if random event at state
-#         value = 0
-#         foreach child of state
-#             value = value + (Probability[child] * expectiminimax(child, depth-1))
-#     return value
+def  expectiminimax(root_state, state, node_type, depth):
+    if state['game_over'] or depth == 0:
+        return heuristic(root_state , state)
 
+    if node_type == "chance":
+        expected_value = 0
+        best_move = None
+        dice_probs = {1: 4 / 16, 2: 6 / 16, 3: 4 / 16, 4: 1 / 16, 5: 1 / 16}
+        for dice_value, prob in dice_probs.items():
+            new_state = copy.deepcopy(state)
+            new_state['dice_value'] = dice_value
 
+            valid_moves = get_valid_moves(new_state, dice_value)
+
+            if not valid_moves:
+                switch_turn(new_state)
+                next_node = "max" if new_state['current_player'] == 1 else "min"
+                value, _ = expectiminimax(root_state, new_state, next_node, depth - 1)
+            else :
+                next_node = "max" if new_state['current_player'] == 1 else "min"
+                value, _ = expectiminimax(root_state, new_state, next_node, depth)
+
+            expected_value += prob * value
+
+        return expected_value, None
+
+    elif node_type == "max":
+        best_value = -float('inf')
+        best_move = None
+
+        dice = state['dice_value']
+        valid_moves = get_valid_moves(state, dice)
+
+        if not valid_moves:
+            new_state = copy.deepcopy(state)
+            switch_turn(new_state)
+            value, _ = expectiminimax(root_state, new_state, "min", depth-1)
+            return value, None
+
+        for move in valid_moves:
+            new_state = copy.deepcopy(state)
+            apply_move(new_state, move[0], move[1], valid_moves)
+            switch_turn(new_state)
+            value, _ = expectiminimax(root_state, new_state, "chance", depth-1)
+            if value > best_value:
+                best_value = value
+                best_move = move
+        return best_value, best_move
+
+    elif node_type == "min":
+        worst_value = float('inf')
+        worst_move = None
+
+        dice = state['dice_value']
+        valid_moves = get_valid_moves(state, dice)
+
+        if not valid_moves:
+            new_state = copy.deepcopy(state)
+            switch_turn(new_state)
+            value, _ = expectiminimax(root_state, new_state, "max", depth-1)
+            return value, None
+
+        for move in valid_moves:
+            new_state = copy.deepcopy(state)
+            apply_move(new_state, move[0], move[1], valid_moves)
+            switch_turn(new_state)
+
+            value, _ = expectiminimax(root_state, new_state, "chance", depth-1)
+
+            if value < worst_value:
+                worst_value = value
+                worst_move = move
+        return worst_value, worst_move
+
+    else:
+        return ValueError("unknown node type")
 

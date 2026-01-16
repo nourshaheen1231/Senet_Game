@@ -1,6 +1,8 @@
 import random
 from typing import Dict, Any
 
+from expectiminimax import expectiminimax
+
 # checked by suliman
 state : Dict[str, Any] = {
     'board': [0] * 30,
@@ -346,32 +348,37 @@ def new_game(state):
 
 # checked by suliman
 def handle_turn(state):
-    dice = roll_dice()
-    state['dice_value'] = dice
-    valid_moves = get_valid_moves(state, dice)
+    if state['current_player'] == 1:  # الكمبيوتر
+        computer_turn(state, depth=4)
 
-    if not valid_moves:
-        switch_turn(state)
-        return
+    else :
+        dice = roll_dice()
+        state['dice_value'] = dice
+        valid_moves = get_valid_moves(state, dice)
 
-    # apply_move(state, old_position, new_position,valid_moves)
+        if not valid_moves:
+            switch_turn(state)
+            return
+
+    # apply_move(state, old_position, new_position, valid_moves)
 
     # هون بعد ما نطبق الحركة منستدعي التابع يلي بيغير الدور للاعب التاني
     switch_turn(state)
 
 
+def computer_turn(state, depth):
+    dice = roll_dice()
+    state['dice_value'] = dice
 
+    value, best_move = expectiminimax(state, state, "chance", depth)
+    if best_move is not None:
+        apply_move(state, best_move[0], best_move[1], get_valid_moves(state, dice))
+        print(f'old place : {best_move[0]}, new place: {best_move[1]}, dice = {dice}')
+    else :
+        print('there is no valid moves for computer')
 
-
-
-
-
-
-
-
-
-
-
+    game_over(state)
+    switch_turn(state)
 
 
 
