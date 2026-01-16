@@ -72,7 +72,7 @@ def main():
                 draw_info_panel(dice_rolled, current_dice_value)  # التأكد من رسم لوحة المعلومات
                 pygame.display.flip()
 
-                pygame.time.delay(1000)  # انتظر ثانية كاملة ليرى اللاعب البشري الرقم
+                # pygame.time.delay(1000)  # انتظر ثانية كاملة ليرى اللاعب البشري الرقم
                 continue  # ننتقل للدورة التالية ليظهر الرقم على الشاشة
 
             # 2. الحصول على الحركات المتاحة
@@ -91,7 +91,7 @@ def main():
 
             # 4. استدعاء الخوارزمية لاختيار أفضل حركة
             # ملاحظة: نمرر state مرتين لأن الهيوريستيك يحتاج (root_state, current_state)
-            _, best_move = expectiminimax.expectiminimax(state, state, "max", depth=2)
+            _, best_move = expectiminimax.expectiminimax(state, state, "max", depth=4)
 
             # 5. تطبيق الحركة إذا وجدت
             if best_move:

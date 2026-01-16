@@ -21,14 +21,14 @@ def heuristic(state, new_state):
     if sum_new_computer > sum_old_computer:
         score += sum_new_computer - sum_old_computer
     elif sum_new_computer < sum_old_computer:
-        score -= sum_old_computer - sum_new_computer   
+        score -= sum_old_computer - sum_new_computer
 
     sum_old_human = sum(old_human_pieces)
     sum_new_human = sum(new_human_pieces)
     if sum_new_human > sum_old_human:
-        score -= sum_new_human - sum_old_human
+        score -= (sum_new_human - sum_old_human) * 3
     elif sum_new_human < sum_old_human:
-        score += sum_old_human - sum_new_human
+        score += (sum_old_human - sum_new_human) * 3
 
     for piece in new_computer_pieces:
         if piece == 23:
@@ -37,19 +37,23 @@ def heuristic(state, new_state):
             score +=  4/16
         elif piece == 22:
             score += 2 *(4/16)
+        elif piece == 25:
+            score += 30
         elif piece == 26:
-            score -= 20
+            score -= 30
         elif piece == 27:
-            score -=2*(4/16)
+            score -= 2*(4/16)
         elif piece == 28:
-            score -=6/16
-        elif piece ==29:
-            score +=6
+            score -= 6/16
+        elif piece == 29:
+            score += 50
+        elif piece == 30 :
+            score += 70
 
     if new_computer_box > old_computer_box:
-        score += 6
+        score += 50
     if new_human_box > old_human_box:
-        score -= 6
+        score -= 20
 
     sorted_computer = sorted(new_computer_pieces)
     sorted_human = sorted(new_human_pieces)
@@ -63,10 +67,10 @@ def heuristic(state, new_state):
 
         if diff in (1, 2, 3):
             if computer_piece > human_piece:
-                score -= diff * prob[diff]
+                score -= (diff * prob[diff]) * 2
 
             elif computer_piece < human_piece:
-                score += diff * prob[diff]
+                score +=( diff * prob[diff]) * 2
 
     return score
 

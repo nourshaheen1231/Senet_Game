@@ -348,22 +348,26 @@ def new_game(state):
 
 # checked by suliman
 def handle_turn(state):
-    if state['current_player'] == 1:  # الكمبيوتر
-        computer_turn(state, depth=4)
+    # if state['current_player'] == 1:  # الكمبيوتر
+        # computer_turn(state, depth=4)
 
-    else :
-        dice = roll_dice()
-        state['dice_value'] = dice
-        valid_moves = get_valid_moves(state, dice)
+    dice = roll_dice()
+    state['dice_value'] = dice
+    valid_moves = get_valid_moves(state, dice)
 
-        if not valid_moves:
-            switch_turn(state)
-            return
+    if not valid_moves:
+        switch_turn(state)
+        return
 
     # apply_move(state, old_position, new_position, valid_moves)
 
     # هون بعد ما نطبق الحركة منستدعي التابع يلي بيغير الدور للاعب التاني
+
+
     switch_turn(state)
+
+    # else :
+
 
 
 # def computer_turn(state, depth):
