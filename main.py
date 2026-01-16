@@ -1,5 +1,7 @@
 import pygame
 import sys
+
+import expectiminimax
 from game import state, init_game, roll_dice, get_valid_moves, apply_move, switch_turn, game_over, check_and_return_to_rebirth
 from ui import (
     screen, WINDOW_WIDTH, WINDOW_HEIGHT, WHITE,
@@ -55,7 +57,55 @@ def main():
                 if to_pos >= 30:
                     exit_piece_pos = from_pos
                     break
-        
+
+        if not state['game_over'] and state['current_player'] == 0:  # افترضنا 0 هو الكمبيوتر (White)
+            pygame.time.delay(600)  # تأخير بسيط ليرى اللاعب رمية النرد
+
+            # 1. إذا لم يتم رمي النرد بعد، قم برمه
+            if not dice_rolled:
+                pygame.time.delay(500)
+                current_dice_value = roll_dice()
+                state['dice_value'] = current_dice_value
+                dice_rolled = True
+                screen.fill(WHITE)
+                draw_board(None, dice_rolled, current_dice_value)
+                draw_info_panel(dice_rolled, current_dice_value)  # التأكد من رسم لوحة المعلومات
+                pygame.display.flip()
+
+                pygame.time.delay(1000)  # انتظر ثانية كاملة ليرى اللاعب البشري الرقم
+                continue  # ننتقل للدورة التالية ليظهر الرقم على الشاشة
+
+            # 2. الحصول على الحركات المتاحة
+            valid_moves = get_valid_moves(state, current_dice_value)
+
+            # 3. إذا لم يوجد حركات، تعامل مع بيت البعث أو تخطي الدور
+            if not valid_moves:
+                print('there is no valid moves for computer')
+                pygame.time.delay(700)
+                piece_returned = check_and_return_to_rebirth(state, current_dice_value, valid_moves)
+                if not piece_returned:
+                    switch_turn(state)
+                    dice_rolled = False
+                    current_dice_value = 0
+                continue
+
+            # 4. استدعاء الخوارزمية لاختيار أفضل حركة
+            # ملاحظة: نمرر state مرتين لأن الهيوريستيك يحتاج (root_state, current_state)
+            _, best_move = expectiminimax.expectiminimax(state, state, "max", depth=2)
+
+            # 5. تطبيق الحركة إذا وجدت
+            if best_move:
+                print(f'old place : {best_move[0]}, new place: {best_move[1]}, dice = {current_dice_value}')
+                pygame.time.delay(500)
+                move_happened = apply_move(state, best_move[0], best_move[1], valid_moves)
+                if move_happened:
+                    game_over(state)
+                    if not state['game_over']:
+                        switch_turn(state)
+                    dice_rolled = False
+                    current_dice_value = 0
+                continue
+
         # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

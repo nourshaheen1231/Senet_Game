@@ -1,7 +1,7 @@
 import random
 from typing import Dict, Any
 
-from expectiminimax import expectiminimax
+import expectiminimax
 
 # checked by suliman
 state : Dict[str, Any] = {
@@ -366,19 +366,19 @@ def handle_turn(state):
     switch_turn(state)
 
 
-def computer_turn(state, depth):
-    dice = roll_dice()
-    state['dice_value'] = dice
-
-    value, best_move = expectiminimax(state, state, "chance", depth)
-    if best_move is not None:
-        apply_move(state, best_move[0], best_move[1], get_valid_moves(state, dice))
-        print(f'old place : {best_move[0]}, new place: {best_move[1]}, dice = {dice}')
-    else :
-        print('there is no valid moves for computer')
-
-    game_over(state)
-    switch_turn(state)
+# def computer_turn(state, depth):
+#     dice = roll_dice()
+#     state['dice_value'] = dice
+#
+#     value, best_move = expectiminimax(state, state, "chance", depth)
+#     if best_move is not None:
+#         apply_move(state, best_move[0], best_move[1], get_valid_moves(state, dice))
+#         print(f'old place : {best_move[0]}, new place: {best_move[1]}, dice = {dice}')
+#     else :
+#         print('there is no valid moves for computer')
+#
+#     game_over(state)
+#     switch_turn(state)
 
 
 

@@ -74,7 +74,7 @@ def heuristic(state, new_state):
 
 def  expectiminimax(root_state, state, node_type, depth):
     if state['game_over'] or depth == 0:
-        return heuristic(root_state , state)
+        return heuristic(root_state , state), None
 
     if node_type == "chance":
         expected_value = 0
@@ -88,10 +88,10 @@ def  expectiminimax(root_state, state, node_type, depth):
 
             if not valid_moves:
                 switch_turn(new_state)
-                next_node = "max" if new_state['current_player'] == 1 else "min"
+                next_node = "max" if new_state['current_player'] == 0 else "min"
                 value, _ = expectiminimax(root_state, new_state, next_node, depth - 1)
             else :
-                next_node = "max" if new_state['current_player'] == 1 else "min"
+                next_node = "max" if new_state['current_player'] == 0 else "min"
                 value, _ = expectiminimax(root_state, new_state, next_node, depth)
 
             expected_value += prob * value
