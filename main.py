@@ -91,7 +91,7 @@ def main():
 
             # 4. استدعاء الخوارزمية لاختيار أفضل حركة
             # ملاحظة: نمرر state مرتين لأن الهيوريستيك يحتاج (root_state, current_state)
-            _, best_move = expectiminimax.expectiminimax(state, state, "max", depth=4)
+            _, best_move = expectiminimax.expectiminimax(state, state, "max", depth=3)
 
             # 5. تطبيق الحركة إذا وجدت
             if best_move:

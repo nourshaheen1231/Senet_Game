@@ -92,6 +92,9 @@ def get_valid_moves(state, dice_value):
     for current_position in current_pieces:
         new_position = current_position + dice_value
         if is_valid_move(state, current_position, new_position, dice_value):
+            # at the House of Horus any roll will move the piece off the board
+            if current_position == 29:
+                new_position = 30    
             valid_moves.append((current_position, new_position))
 
     return valid_moves
@@ -291,10 +294,6 @@ def apply_move(state, current_position, new_position, valid_moves):
     # moving backward is not allowed    
     if new_position < current_position:
         return False
-
-    # at the House of Horus any roll will move the piece off the board
-    if current_position == 29:
-        new_position = 30    
 
     # move the piece that has exited the board into its box
     if new_position >= 30:
