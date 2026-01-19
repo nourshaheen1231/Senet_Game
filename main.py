@@ -27,20 +27,20 @@ def main():
         # Calculate button positions (same as in draw_info_panel)
         panel_width = 1000
         panel_x = (WINDOW_WIDTH - panel_width) // 2
-        button_x = panel_x + 700
+        button_x = panel_x + 650
         button_y = 20 + 20
         roll_button_rect = pygame.Rect(button_x, button_y, 150, 40)
-        new_game_button_rect = pygame.Rect(button_x + 170, button_y, 150, 40)
+        new_game_button_rect = pygame.Rect(button_x + 155, button_y, 150, 40)
         
         # Calculate exit button position (will be drawn later, but need rect for collision)
         exit_button_x = BOARD_X + BOARD_WIDTH + 20
         exit_button_y = BOARD_Y + BOARD_HEIGHT // 2 - 30
-        exit_button_rect = pygame.Rect(exit_button_x, exit_button_y, 120, 60)
+        exit_button_rect = pygame.Rect(exit_button_x, exit_button_y, 95, 60)
         
         # Calculate skip turn button position
         skip_button_x = BOARD_X + BOARD_WIDTH + 20
         skip_button_y = BOARD_Y + BOARD_HEIGHT // 2 + 40
-        skip_button_rect = pygame.Rect(skip_button_x, skip_button_y, 120, 60)
+        skip_button_rect = pygame.Rect(skip_button_x, skip_button_y, 95, 60)
         
         # Get valid moves for exit button check
         valid_moves = get_valid_moves(state, current_dice_value) if dice_rolled else []

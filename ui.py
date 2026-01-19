@@ -130,6 +130,15 @@ def draw_rounded_rect_border(surface, color, rect, radius, width=1):
     # Bottom-right corner (270 to 360 degrees)
     pygame.draw.arc(surface, color, (x + w - radius * 2, y + h - radius * 2, radius * 2, radius * 2), 4.71, 6.28, width)
 
+rebirth_img = pygame.image.load("images/rebirth.png")
+rebirth_img = pygame.transform.scale(rebirth_img, (SQUARE_SIZE, SQUARE_SIZE))
+happy_img = pygame.image.load("images/happy.png")
+happy_img = pygame.transform.scale(happy_img, (SQUARE_SIZE, SQUARE_SIZE))
+three_img = pygame.image.load("images/three.png")
+three_img = pygame.transform.scale(three_img, (SQUARE_SIZE, SQUARE_SIZE))
+two_img = pygame.image.load("images/two.png")
+two_img = pygame.transform.scale(two_img, (SQUARE_SIZE, SQUARE_SIZE))
+
 def draw_special_symbol(surface, square_index, x, y, size):
     """Draw special symbols on certain squares"""
     center_x = x + size // 2
@@ -137,58 +146,36 @@ def draw_special_symbol(surface, square_index, x, y, size):
     
     # Square 15 (index 14) - Ankh symbol (simplified)
     if square_index == 14:
-        # Draw simplified Ankh
-        pygame.draw.line(surface, BLACK, (center_x - 10, center_y - 15), (center_x - 10, center_y + 10), 2)
-        pygame.draw.line(surface, BLACK, (center_x - 10, center_y - 15), (center_x + 10, center_y - 15), 2)
-        pygame.draw.line(surface, BLACK, (center_x + 10, center_y - 15), (center_x + 10, center_y - 5), 2)
-        pygame.draw.line(surface, BLACK, (center_x - 5, center_y - 5), (center_x + 5, center_y - 5), 2)
-        pygame.draw.line(surface, BLACK, (center_x, center_y - 5), (center_x, center_y + 10), 2)
-    
+        surface.blit(rebirth_img, (x, y))
+\
     # Square 26 (index 25) - House of Happiness - Three symbols side by side (simplified)
     elif square_index == 25:
-        for i in range(3):
-            offset_x = -15 + i * 15
-            # Draw simplified spoon symbol horizontally
-            pygame.draw.circle(surface, BLACK, (center_x + offset_x, center_y), 5, 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x, center_y + 5), (center_x + offset_x, center_y + 10), 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x - 3, center_y + 8), (center_x + offset_x + 3, center_y + 8), 1)
-    
+        surface.blit(happy_img, (x, y))
+
     # Square 27 (index 26) - Three wavy lines
     elif square_index == 26:
         for i in range(3):
-            offset_y = -10 + i * 10
+            offset_y = -20 + i * 20
             # Draw wavy lines
             points = []
-            for j in range(0, size, 5):
+            for j in range(0, size, 10):
                 wave_y = offset_y + 5 * (1 if (j // 10) % 2 == 0 else -1)
-                points.append((x + j, center_y + wave_y))
+                points.append((x + j+4, center_y + wave_y))
             if len(points) > 1:
                 pygame.draw.lines(surface, BLACK, False, points, 2)
     
     # Square 28 (index 27) - Three birds (simplified)
     elif square_index == 27:
-        for i in range(3):
-            offset_x = -15 + i * 15
-            # Draw simplified bird
-            pygame.draw.circle(surface, BLACK, (center_x + offset_x, center_y - 5), 4, 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x, center_y - 1), (center_x + offset_x + 5, center_y + 3), 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x, center_y + 1), (center_x + offset_x, center_y + 8), 2)
-    
+        surface.blit(three_img, (x, y))
+
     # Square 29 (index 28) - Two kneeling figures (simplified)
     elif square_index == 28:
-        for i in range(2):
-            offset_x = -8 + i * 16
-            # Draw simplified figure
-            pygame.draw.circle(surface, BLACK, (center_x + offset_x, center_y - 8), 4, 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x, center_y - 4), (center_x + offset_x, center_y + 5), 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x - 3, center_y), (center_x + offset_x + 3, center_y), 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x, center_y + 5), (center_x + offset_x - 4, center_y + 10), 2)
-            pygame.draw.line(surface, BLACK, (center_x + offset_x, center_y + 5), (center_x + offset_x + 4, center_y + 10), 2)
-    
+        surface.blit(two_img, (x, y))
+
     # Square 30 (index 29) - Target/circle symbol
     elif square_index == 29:
-        pygame.draw.circle(surface, BLACK, (center_x, center_y), 15, 2)
-        pygame.draw.circle(surface, BLACK, (center_x, center_y), 8, 2)
+        pygame.draw.circle(surface, BLACK, (center_x, center_y), 30, 4)
+        pygame.draw.circle(surface, BLACK, (center_x, center_y), 10, 10)
 
 def draw_board(selected_piece=None, dice_rolled=False, current_dice_value=0):
     """Draw the game board with rounded corners matching the image"""
@@ -318,7 +305,7 @@ def draw_info_panel(dice_rolled=False, current_dice_value=0):
     screen.blit(text, (x + 500, y + 45))
     
     # Roll dice button
-    button_x = x + 700
+    button_x = x + 650
     button_y = y + 20
     roll_button_rect = pygame.Rect(button_x, button_y, 150, 40)
     pygame.draw.rect(screen, BLUE, roll_button_rect)
@@ -328,7 +315,7 @@ def draw_info_panel(dice_rolled=False, current_dice_value=0):
     screen.blit(text, text_rect)
     
     # New game button
-    new_game_button_rect = pygame.Rect(button_x + 170, button_y, 150, 40)
+    new_game_button_rect = pygame.Rect(button_x + 155, button_y, 150, 40)
     pygame.draw.rect(screen, GREEN, new_game_button_rect)
     pygame.draw.rect(screen, BLACK, new_game_button_rect, 2)
     text = font.render("New Game", True, WHITE)
@@ -350,7 +337,7 @@ def draw_exit_button(dice_rolled=False, current_dice_value=0, valid_moves=None):
     button_x = BOARD_X + BOARD_WIDTH + 20
     button_y = BOARD_Y + BOARD_HEIGHT // 2 - 30  # Center vertically
     
-    exit_button_rect = pygame.Rect(button_x, button_y, 120, 60)
+    exit_button_rect = pygame.Rect(button_x, button_y, 95, 60)
     
     # Check if there's any valid move to exit (position 30) in valid_moves
     can_exit = False
@@ -389,7 +376,7 @@ def draw_skip_turn_button(valid_moves=None, dice_rolled=False):
     button_x = BOARD_X + BOARD_WIDTH + 20
     button_y = BOARD_Y + BOARD_HEIGHT // 2 + 40  # Below exit button
     
-    skip_button_rect = pygame.Rect(button_x, button_y, 120, 60)
+    skip_button_rect = pygame.Rect(button_x, button_y, 95, 60)
     
     # Check if valid_moves is empty AND dice is rolled
     can_skip = dice_rolled and valid_moves is not None and len(valid_moves) == 0
