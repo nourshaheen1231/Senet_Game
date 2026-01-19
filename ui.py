@@ -45,7 +45,7 @@ PURPLE = (128, 0, 128)  # Purple color for movable pieces
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Senet Game")
 font = pygame.font.Font(None, 36)
-small_font = pygame.font.Font(None, 24)
+small_font = pygame.font.Font(None, 17)
 
 # UI only - no game state here
 
