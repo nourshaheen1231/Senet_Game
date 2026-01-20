@@ -51,9 +51,9 @@ def heuristic(state, new_state):
             score += 70
 
     if new_computer_box > old_computer_box:
-        score += 50
+        score += 100
     if new_human_box > old_human_box:
-        score -= 20
+        score -= 70
 
     sorted_computer = sorted(new_computer_pieces)
     sorted_human = sorted(new_human_pieces)
