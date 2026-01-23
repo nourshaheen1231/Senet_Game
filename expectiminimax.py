@@ -75,10 +75,19 @@ def heuristic(state, new_state):
     return score
 
 ######################################
+nodes_explored = 0
 
 def  expectiminimax(root_state, state, node_type, depth):
+    global nodes_explored
+    nodes_explored += 1
+
+    indent = "  " * (2 - depth)
+    print(f"{indent}Exploring {node_type} Node at Depth {depth}")
+
     if state['game_over'] or depth == 0:
-        return heuristic(root_state , state), None
+        value = heuristic(root_state , state)
+        print(f"{indent}Base Case reached. Heuristic Value: {value}")
+        return value, None
 
     if node_type == "chance":
         expected_value = 0
@@ -99,6 +108,8 @@ def  expectiminimax(root_state, state, node_type, depth):
                 value, _ = expectiminimax(root_state, new_state, next_node, depth)
 
             expected_value += prob * value
+
+        print(f"{indent}Chance Node Result (Expected Value): {expected_value}")
 
         return expected_value, None
 
@@ -123,6 +134,8 @@ def  expectiminimax(root_state, state, node_type, depth):
             if value > best_value:
                 best_value = value
                 best_move = move
+
+        print(f"{indent}Max Node returned Value: {best_value}")
         return best_value, best_move
 
     elif node_type == "min":
@@ -148,6 +161,9 @@ def  expectiminimax(root_state, state, node_type, depth):
             if value < worst_value:
                 worst_value = value
                 worst_move = move
+
+        print(f"{indent}Min Node returned Value: {worst_value}")
+
         return worst_value, worst_move
 
     else:

@@ -2,6 +2,7 @@ import pygame
 import sys
 
 import expectiminimax
+from expectiminimax import nodes_explored
 from game import state, init_game, roll_dice, get_valid_moves, apply_move, switch_turn, game_over, check_and_return_to_rebirth
 from ui import (
     screen, WINDOW_WIDTH, WINDOW_HEIGHT, WHITE,BLACK,
@@ -11,12 +12,7 @@ from ui import (
 )
 
 def main():
-    """Main game loop"""
 
-    # ================================
-    # NEW: game mode selection buttons
-    # default mode = human vs human
-    # ================================
     game_mode = "human_vs_human"
 
     mode_button_x = -1
@@ -26,7 +22,6 @@ def main():
 
     hvh_button_rect = pygame.Rect(mode_button_x, mode_button_y, mode_button_w, mode_button_h)
     hvc_button_rect = pygame.Rect(mode_button_x, mode_button_y + 50, mode_button_w, mode_button_h)
-    # ================================
 
     selected_piece = None
     dice_rolled = False
@@ -60,9 +55,6 @@ def main():
             check_and_return_to_rebirth(state, current_dice_value, valid_moves)
             valid_moves = get_valid_moves(state, current_dice_value)
 
-        # ============================================================
-        # NEW: AI plays ONLY if mode = human_vs_computer AND player=0
-        # ============================================================
         if (
             game_mode == "human_vs_computer"
             and not state['game_over']
@@ -91,11 +83,12 @@ def main():
                     dice_rolled = False
                     current_dice_value = 0
                 continue
-
+            expectiminimax.nodes_explored = 0
             _, best_move = expectiminimax.expectiminimax(state, state, "max", depth=3)
-
+            print(f"Total Nodes Explored: {expectiminimax.nodes_explored}")
             if best_move:
                 pygame.time.delay(500)
+                print(f"Decision: Move from {best_move[0]} to {best_move[1]}")
                 move_happened = apply_move(state, best_move[0], best_move[1], valid_moves)
                 if move_happened:
                     game_over(state)
@@ -104,7 +97,6 @@ def main():
                     dice_rolled = False
                     current_dice_value = 0
                 continue
-        # ============================================================
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -114,9 +106,6 @@ def main():
                 if event.button == 1:
                     mouse_x, mouse_y = event.pos
 
-                    # ============================================
-                    # NEW: mode selection buttons (UI clickable)
-                    # ============================================
                     if hvh_button_rect.collidepoint(mouse_x, mouse_y):
                         game_mode = "human_vs_human"
                         continue
@@ -124,7 +113,6 @@ def main():
                     if hvc_button_rect.collidepoint(mouse_x, mouse_y):
                         game_mode = "human_vs_computer"
                         continue
-                    # ============================================
 
                     if roll_button_rect.collidepoint(mouse_x, mouse_y):
                         if state['game_over']:
@@ -202,9 +190,6 @@ def main():
 
         screen.fill(WHITE)
 
-        # ============================================
-        # NEW: draw mode selection buttons
-        # ============================================
         pygame.draw.rect(screen, (100, 100, 255), hvh_button_rect)
         pygame.draw.rect(screen, BLACK, hvh_button_rect, 2)
         pygame.draw.rect(screen, (100, 255, 100), hvc_button_rect)
@@ -218,7 +203,6 @@ def main():
 
         screen.blit(hvc_text, (hvc_button_rect.centerx - hvc_text.get_width()//2,
                                hvc_button_rect.centery - hvc_text.get_height()//2))
-        # ============================================
 
         draw_board(selected_piece, dice_rolled, current_dice_value)
         draw_exit_button(dice_rolled, current_dice_value, valid_moves)
