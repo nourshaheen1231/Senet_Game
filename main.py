@@ -4,18 +4,77 @@ import sys
 import expectiminimax
 from game import state, init_game, roll_dice, get_valid_moves, apply_move, switch_turn, game_over, check_and_return_to_rebirth
 from ui import (
-    screen, WINDOW_WIDTH, WINDOW_HEIGHT, WHITE,BLACK,
+    screen, WINDOW_WIDTH, WINDOW_HEIGHT, WHITE, BLACK,
     BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT,
     draw_board, draw_info_panel, draw_exit_button, draw_skip_turn_button,
     get_square_from_pos, font, small_font
 )
 
+# ============================================================
+# NEW: Simple screen to choose Debug Mode before starting game
+# ============================================================
+def choose_debug_mode():
+    pygame.init()
+
+    w, h = 400, 250
+    window = pygame.display.set_mode((w, h))
+    pygame.display.set_caption("Debug Mode")
+
+    font_big = pygame.font.Font(None, 40)
+    font_small = pygame.font.Font(None, 30)
+
+    off_button = pygame.Rect(100, 120, 200, 40)
+    on_button = pygame.Rect(100, 170, 200, 40)
+
+    while True:
+        window.fill((230, 230, 230))
+
+        title = font_big.render("Debug Mode", True, (0, 0, 0))
+        window.blit(title, (w//2 - title.get_width()//2, 40))
+
+        pygame.draw.rect(window, (180, 60, 60), off_button)
+        pygame.draw.rect(window, BLACK, off_button, 2)
+        off_text = font_small.render("Debug OFF", True, WHITE)
+        window.blit(off_text, (off_button.centerx - off_text.get_width()//2,
+                               off_button.centery - off_text.get_height()//2))
+
+        pygame.draw.rect(window, (60, 160, 60), on_button)
+        pygame.draw.rect(window, BLACK, on_button, 2)
+        on_text = font_small.render("Debug ON", True, WHITE)
+        window.blit(on_text, (on_button.centerx - on_text.get_width()//2,
+                              on_button.centery - on_text.get_height()//2))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mx, my = event.pos
+
+                if off_button.collidepoint(mx, my):
+                    return False
+
+                if on_button.collidepoint(mx, my):
+                    return True
+
+
+# ============================================================
+# MAIN GAME LOOP
+# ============================================================
 def main():
     """Main game loop"""
 
+    # NEW: choose debug mode before entering the game
+    debug_mode = choose_debug_mode()
+
+    # Restore full game window size
+    pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+
     # ================================
-    # NEW: game mode selection buttons
-    # default mode = human vs human
+    # Game mode selection buttons
     # ================================
     game_mode = "human_vs_human"
 
@@ -26,7 +85,6 @@ def main():
 
     hvh_button_rect = pygame.Rect(mode_button_x, mode_button_y, mode_button_w, mode_button_h)
     hvc_button_rect = pygame.Rect(mode_button_x, mode_button_y + 50, mode_button_w, mode_button_h)
-    # ================================
 
     selected_piece = None
     dice_rolled = False
@@ -61,7 +119,7 @@ def main():
             valid_moves = get_valid_moves(state, current_dice_value)
 
         # ============================================================
-        # NEW: AI plays ONLY if mode = human_vs_computer AND player=0
+        # AI TURN
         # ============================================================
         if (
             game_mode == "human_vs_computer"
@@ -92,7 +150,20 @@ def main():
                     current_dice_value = 0
                 continue
 
-            _, best_move = expectiminimax.expectiminimax(state, state, "max", depth=3)
+            # AI DECISION
+            best_value, best_move = expectiminimax.expectiminimax(
+                state, state, "max", depth=3, debug=debug_mode
+            )
+
+            # PRINT DEBUG INFO
+            if debug_mode:
+                print("\n====================================")
+                print("DEBUG MODE ACTIVE")
+                print(f"Nodes visited: {expectiminimax.node_counter}")
+                print(f"Heuristic value: {best_value}")
+                print(f"Chosen move: {best_move}")
+                print("====================================\n")
+                expectiminimax.node_counter = 0
 
             if best_move:
                 pygame.time.delay(500)
@@ -104,8 +175,10 @@ def main():
                     dice_rolled = False
                     current_dice_value = 0
                 continue
-        # ============================================================
 
+        # ============================================================
+        # EVENT HANDLING
+        # ============================================================
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -114,9 +187,7 @@ def main():
                 if event.button == 1:
                     mouse_x, mouse_y = event.pos
 
-                    # ============================================
-                    # NEW: mode selection buttons (UI clickable)
-                    # ============================================
+                    # Mode selection
                     if hvh_button_rect.collidepoint(mouse_x, mouse_y):
                         game_mode = "human_vs_human"
                         continue
@@ -124,8 +195,8 @@ def main():
                     if hvc_button_rect.collidepoint(mouse_x, mouse_y):
                         game_mode = "human_vs_computer"
                         continue
-                    # ============================================
 
+                    # Roll dice
                     if roll_button_rect.collidepoint(mouse_x, mouse_y):
                         if state['game_over']:
                             continue
@@ -134,8 +205,21 @@ def main():
                             state['dice_value'] = current_dice_value
                             dice_rolled = True
                             selected_piece = None
+
+                            # PRINT OLD DEBUG INFO
+                            current_pieces = state['player1_pieces'] if state['current_player'] == 1 else state['player2_pieces']
+                            valid_moves = get_valid_moves(state, current_dice_value)
+
+                            print("========================================")
+                            print(f"Current player: {state['current_player']} ({'Black' if state['current_player'] == 1 else 'White'})")
+                            print(f"Player pieces: {sorted(current_pieces)}")
+                            print(f"Dice rolled: {current_dice_value}")
+                            print(f"Valid moves: {valid_moves}")
+                            print("========================================")
+
                         continue
 
+                    # New game
                     if new_game_button_rect.collidepoint(mouse_x, mouse_y):
                         init_game(state)
                         selected_piece = None
@@ -143,6 +227,7 @@ def main():
                         current_dice_value = 0
                         continue
 
+                    # Exit piece
                     if exit_button_rect.collidepoint(mouse_x, mouse_y):
                         if dice_rolled and selected_piece is not None:
                             move_happened = apply_move(state, selected_piece, 30, valid_moves)
@@ -155,6 +240,7 @@ def main():
                             selected_piece = None
                         continue
 
+                    # Skip turn
                     if skip_button_rect.collidepoint(mouse_x, mouse_y):
                         if dice_rolled and len(valid_moves) == 0:
                             piece_returned = check_and_return_to_rebirth(state, current_dice_value, valid_moves)
@@ -164,6 +250,7 @@ def main():
                                 current_dice_value = 0
                         continue
 
+                    # Board click
                     square = get_square_from_pos(mouse_x, mouse_y)
                     if square is None:
                         continue
@@ -200,11 +287,11 @@ def main():
 
                         selected_piece = None
 
+        # ============================================================
+        # RENDERING
+        # ============================================================
         screen.fill(WHITE)
 
-        # ============================================
-        # NEW: draw mode selection buttons
-        # ============================================
         pygame.draw.rect(screen, (100, 100, 255), hvh_button_rect)
         pygame.draw.rect(screen, BLACK, hvh_button_rect, 2)
         pygame.draw.rect(screen, (100, 255, 100), hvc_button_rect)
@@ -218,7 +305,6 @@ def main():
 
         screen.blit(hvc_text, (hvc_button_rect.centerx - hvc_text.get_width()//2,
                                hvc_button_rect.centery - hvc_text.get_height()//2))
-        # ============================================
 
         draw_board(selected_piece, dice_rolled, current_dice_value)
         draw_exit_button(dice_rolled, current_dice_value, valid_moves)
