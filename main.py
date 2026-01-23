@@ -9,7 +9,7 @@ from ui import (
     draw_board, draw_info_panel, draw_exit_button, draw_skip_turn_button,
     get_square_from_pos, font, small_font
 )
-
+# This window is used to display information from the Expectiminimax algorithm
 def choose_debug_mode():
     pygame.init()
 
@@ -56,6 +56,7 @@ def choose_debug_mode():
 
                 if on_button.collidepoint(mx, my):
                     return True
+
 
 def main():
 
@@ -185,7 +186,7 @@ def main():
                             dice_rolled = True
                             selected_piece = None
 
-                            # PRINT OLD DEBUG INFO
+                            # print old debug info
                             current_pieces = state['player1_pieces'] if state['current_player'] == 1 else state['player2_pieces']
                             valid_moves = get_valid_moves(state, current_dice_value)
 

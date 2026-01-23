@@ -17,21 +17,21 @@ def heuristic(state, new_state):
         new_human_box = new_state['black_box']
 
     score = 0
-
+    #checking whether the computer’s pieces have advanced or fallen back in the new state
     sum_old_computer = sum(old_computer_pieces)
     sum_new_computer = sum(new_computer_pieces)
     if sum_new_computer > sum_old_computer:
         score += sum_new_computer - sum_old_computer
     elif sum_new_computer < sum_old_computer:
         score -= sum_old_computer - sum_new_computer
-
+    #checking whether the human’s pieces have advanced or fallen back in the new state
     sum_old_human = sum(old_human_pieces)
     sum_new_human = sum(new_human_pieces)
     if sum_new_human > sum_old_human:
         score -= (sum_new_human - sum_old_human) * 3
     elif sum_new_human < sum_old_human:
         score += (sum_old_human - sum_new_human) * 3
-
+    # evaluate based on specific piece positions
     for piece in new_computer_pieces:
         if piece == 23:
             score += 2*(6/16)
@@ -51,12 +51,13 @@ def heuristic(state, new_state):
             score += 50
         elif piece == 30:
             score += 70
-
+    
     if new_computer_box > old_computer_box:
         score += 100
     if new_human_box > old_human_box:
         score -= 70
 
+    #updating the score based on the distance between the computer’s pieces and the opponent’s pieces
     sorted_computer = sorted(new_computer_pieces)
     sorted_human = sorted(new_human_pieces)
 
@@ -91,7 +92,7 @@ def expectiminimax(root_state, state, node_type, depth, debug=False, original_de
     if state['game_over'] or depth == 0:
         h = heuristic(root_state, state)
         if debug:
-            print(f"{indent} Terminal node → heuristic = {h}")
+            print(f"{indent} Terminal node   heuristic = {h}")
         return h, None
 
     if node_type == "chance":
@@ -150,7 +151,7 @@ def expectiminimax(root_state, state, node_type, depth, debug=False, original_de
             value, _ = expectiminimax(root_state, new_state, "chance", depth - 1, debug, original_depth)
 
             if debug:
-                print(f"{indent}      MAX testing move {move} → value={value}")
+                print(f"{indent}      MAX testing move {move}   value={value}")
 
             if value > best_value:
                 best_value = value
@@ -185,7 +186,7 @@ def expectiminimax(root_state, state, node_type, depth, debug=False, original_de
             value, _ = expectiminimax(root_state, new_state, "chance", depth - 1, debug, original_depth)
 
             if debug:
-                print(f"{indent}      MIN testing move {move} → value={value}")
+                print(f"{indent}      MIN testing move {move}    value={value}")
 
             if value < worst_value:
                 worst_value = value

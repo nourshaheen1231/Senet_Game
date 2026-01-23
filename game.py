@@ -3,7 +3,6 @@ from typing import Dict, Any
 
 import expectiminimax
 
-# checked by suliman
 state : Dict[str, Any] = {
     'board': [0] * 30,
 
@@ -27,7 +26,6 @@ state : Dict[str, Any] = {
     'winner': None
 }
 
-# checked by suliman
 def init_game(state: Dict[str, Any]):
 
     state['board'] = [0] * 30
@@ -51,8 +49,6 @@ def init_game(state: Dict[str, Any]):
     state['winner'] = None
 
 
-
-# checked by suliman
 def roll_dice() :
     stick1 = random.randint(0,1)
     stick2 = random.randint(0,1)
@@ -66,7 +62,6 @@ def roll_dice() :
 
     return total
 
-# checked by suliman
 def is_valid_move(state, old_position, new_position, dice_value) :
 
     current_player = state['current_player']
@@ -84,7 +79,6 @@ def is_valid_move(state, old_position, new_position, dice_value) :
     
     return True
 
-# checked by suliman
 def get_valid_moves(state, dice_value):
     current_player = state['current_player']
     current_pieces = state['player1_pieces'] if current_player == 1 else state['player2_pieces']
@@ -99,11 +93,9 @@ def get_valid_moves(state, dice_value):
 
     return valid_moves
 
-# checked by suliman
 def switch_turn(state):
     state['current_player'] = 1 - state['current_player']
 
-# checked by suliman
 def game_over(state):
     if state['black_box'] == 7:
         state['winner'] = 0
@@ -127,7 +119,6 @@ def game_over(state):
     state['winner'] = None
     return False
 
-# checked by suliman
 def swap_pieces(state, from_pos, to_pos):
     current_player = state['current_player']
     # Match the logic from get_valid_moves and apply_move
@@ -154,7 +145,6 @@ def swap_pieces(state, from_pos, to_pos):
     state['board'][from_pos] = opponent_player_val
     state['board'][to_pos] = current_player_val
 
-# checked by suliman
 # return the first available position befor rebirth
 def force_rebirth(state):
     rebirth = 14
@@ -341,77 +331,5 @@ def apply_move(state, current_position, new_position, valid_moves):
 
     return False
 
-# checked by suliman
 def new_game(state):
     return init_game(state)
-
-# checked by suliman
-def handle_turn(state):
-    # if state['current_player'] == 1:  # الكمبيوتر
-        # computer_turn(state, depth=4)
-
-    dice = roll_dice()
-    state['dice_value'] = dice
-    valid_moves = get_valid_moves(state, dice)
-
-    if not valid_moves:
-        switch_turn(state)
-        return
-
-    # apply_move(state, old_position, new_position, valid_moves)
-
-    # هون بعد ما نطبق الحركة منستدعي التابع يلي بيغير الدور للاعب التاني
-
-
-    switch_turn(state)
-
-    # else :
-
-
-
-# def computer_turn(state, depth):
-#     dice = roll_dice()
-#     state['dice_value'] = dice
-#
-#     value, best_move = expectiminimax(state, state, "chance", depth)
-#     if best_move is not None:
-#         apply_move(state, best_move[0], best_move[1], get_valid_moves(state, dice))
-#         print(f'old place : {best_move[0]}, new place: {best_move[1]}, dice = {dice}')
-#     else :
-#         print('there is no valid moves for computer')
-#
-#     game_over(state)
-#     switch_turn(state)
-
-
-
-
-
-# def handle_turn(state, old_position=None, new_position=None):
-#     dice = roll_dice()
-#     state['dice_value'] = dice
-
-#     valid_moves = get_valid_moves(state, dice)
-#     if not valid_moves:
-#         switch_turn(state)
-#         return
-
-#     # في الـ UI، رح تختاري old_position من مفاتيح valid_moves
-#     # و new_position = valid_moves[old_position]
-#     if old_position is None or new_position is None:
-#         # إذا بدك مؤقتًا تتأكدي من الدالة بدون UI، ما منطبق حركة
-#         return
-
-#     apply_move(state, old_position, new_position, valid_moves)
-#     switch_turn(state)
-
-###################################
-# def run_game(state):
-#     init_game(state)
-#
-#     while not state['game_over']:
-#         handle_turn(state)
-#         game_over(state)
-
-
-
