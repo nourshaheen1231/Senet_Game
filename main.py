@@ -10,9 +10,6 @@ from ui import (
     get_square_from_pos, font, small_font
 )
 
-# ============================================================
-# NEW: Simple screen to choose Debug Mode before starting game
-# ============================================================
 def choose_debug_mode():
     pygame.init()
 
@@ -60,22 +57,12 @@ def choose_debug_mode():
                 if on_button.collidepoint(mx, my):
                     return True
 
-
-# ============================================================
-# MAIN GAME LOOP
-# ============================================================
 def main():
-    """Main game loop"""
 
-    # NEW: choose debug mode before entering the game
     debug_mode = choose_debug_mode()
 
-    # Restore full game window size
     pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
-    # ================================
-    # Game mode selection buttons
-    # ================================
     game_mode = "human_vs_human"
 
     mode_button_x = -1
@@ -118,9 +105,6 @@ def main():
             check_and_return_to_rebirth(state, current_dice_value, valid_moves)
             valid_moves = get_valid_moves(state, current_dice_value)
 
-        # ============================================================
-        # AI TURN
-        # ============================================================
         if (
             game_mode == "human_vs_computer"
             and not state['game_over']
@@ -150,12 +134,10 @@ def main():
                     current_dice_value = 0
                 continue
 
-            # AI DECISION
             best_value, best_move = expectiminimax.expectiminimax(
                 state, state, "max", depth=3, debug=debug_mode
             )
 
-            # PRINT DEBUG INFO
             if debug_mode:
                 print("\n====================================")
                 print("DEBUG MODE ACTIVE")
@@ -176,9 +158,6 @@ def main():
                     current_dice_value = 0
                 continue
 
-        # ============================================================
-        # EVENT HANDLING
-        # ============================================================
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -287,9 +266,6 @@ def main():
 
                         selected_piece = None
 
-        # ============================================================
-        # RENDERING
-        # ============================================================
         screen.fill(WHITE)
 
         pygame.draw.rect(screen, (100, 100, 255), hvh_button_rect)

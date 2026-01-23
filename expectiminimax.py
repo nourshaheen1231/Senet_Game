@@ -1,7 +1,6 @@
 import copy
 from game import get_valid_moves, switch_turn, apply_move
 
-# GLOBAL COUNTER FOR VISITED NODES
 node_counter = 0
 
 
@@ -77,7 +76,6 @@ def heuristic(state, new_state):
     return score
 
 
-# EXPECTIMINIMAX WITH FULL DEBUG PRINTING
 def expectiminimax(root_state, state, node_type, depth, debug=False, original_depth=None):
     global node_counter
     node_counter += 1
@@ -87,26 +85,21 @@ def expectiminimax(root_state, state, node_type, depth, debug=False, original_de
 
     indent = "    " * (original_depth - depth)
 
-    # Print entering node
     if debug:
         print(f"{indent}>> Enter {node_type.upper()} node | depth={depth}, player={state['current_player']}")
 
-    # Terminal or depth limit
     if state['game_over'] or depth == 0:
         h = heuristic(root_state, state)
         if debug:
-            print(f"{indent}   Terminal node → heuristic = {h}")
+            print(f"{indent} Terminal node → heuristic = {h}")
         return h, None
 
-    # ============================================================
-    # CHANCE NODE
-    # ============================================================
     if node_type == "chance":
         expected_value = 0
         dice_probs = {1: 4/16, 2: 6/16, 3: 4/16, 4: 1/16, 5: 1/16}
 
         if debug:
-            print(f"{indent}   CHANCE node evaluating dice outcomes...")
+            print(f"{indent} CHANCE node evaluating dice outcomes ")
 
         for dice_value, prob in dice_probs.items():
             new_state = copy.deepcopy(state)
@@ -126,16 +119,13 @@ def expectiminimax(root_state, state, node_type, depth, debug=False, original_de
             expected_value += weighted
 
             if debug:
-                print(f"{indent}      Dice={dice_value}, prob={prob}, value={value}, weighted={weighted}")
+                print(f"{indent} Dice={dice_value}, prob={prob}, value={value}, weighted={weighted}")
 
         if debug:
             print(f"{indent}   CHANCE returns {expected_value}")
 
         return expected_value, None
 
-    # ============================================================
-    # MAX NODE
-    # ============================================================
     elif node_type == "max":
         best_value = -float('inf')
         best_move = None
@@ -171,9 +161,6 @@ def expectiminimax(root_state, state, node_type, depth, debug=False, original_de
 
         return best_value, best_move
 
-    # ============================================================
-    # MIN NODE
-    # ============================================================
     elif node_type == "min":
         worst_value = float('inf')
         worst_move = None
